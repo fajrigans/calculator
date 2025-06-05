@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-initial-scale=1.0, shrink-to-fit=no">
     <title>Kalkulator Profesional Akurat</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +18,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden; /* Hindari scroll */
+            /* overflow: hidden; */ /* Dihapus untuk memungkinkan scroll jika konten terlalu besar, meskipun kita berusaha menghindarinya */
             color: #e0e0e0; /* Warna teks default */
         }
         .calculator-container {
@@ -27,14 +27,13 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), /* Bayangan lebih dalam */
                         0 0 0 1px rgba(255, 255, 255, 0.05) inset; /* Garis tipis di dalam */
             width: 100%;
-            max-width: 380px; /* Lebar maksimum untuk tampilan mobile */
+            max-width: 340px; /* Lebar maksimum yang lebih kecil untuk tampilan web */
             display: flex;
             flex-direction: column;
-            padding: 1.5rem; /* Padding lebih besar */
+            padding: 1.2rem; /* Padding sedikit lebih kecil */
             box-sizing: border-box;
             position: relative; /* Untuk efek glow */
             overflow: hidden; /* Pastikan bayangan dalam tidak keluar */
-            /* margin-bottom: 2rem; <-- Dihapus karena iklan sudah di dalam */
         }
 
         /* Efek glow di sekitar kalkulator */
@@ -60,16 +59,16 @@
         .display-wrapper { /* Wrapper baru untuk display agar bisa diklik */
             background-color: #1e1e1e; /* Sama dengan container agar menyatu */
             color: #ffffff;
-            font-size: 4rem; /* Ukuran font default, akan disesuaikan JS */
+            font-size: 3.5rem; /* Ukuran font display sedikit lebih kecil */
             text-align: right;
-            padding: 1.5rem 1rem;
+            padding: 1.2rem 0.8rem; /* Padding sedikit lebih kecil */
             border-radius: 1rem; /* Sudut membulat */
-            margin-bottom: 1.5rem; /* Margin lebih besar */
+            margin-bottom: 1.2rem; /* Margin sedikit lebih kecil */
             overflow: hidden; /* Penting: mencegah teks meluap */
             white-space: nowrap; /* Penting: menjaga teks dalam satu baris */
             text-overflow: clip; /* Ubah ke clip agar tidak ada elipsis jika font mengecil */
             font-weight: 300; /* Font lebih tipis untuk tampilan modern */
-            min-height: 6rem; /* Tinggi minimum display */
+            min-height: 5.5rem; /* Tinggi minimum display sedikit lebih kecil */
             display: flex;
             align-items: flex-end;
             justify-content: flex-end;
@@ -84,16 +83,16 @@
         .buttons-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 0.8rem; /* Jarak antar tombol sedikit lebih besar */
-            margin-bottom: 1.5rem; /* Jarak antara grid tombol dan iklan */
+            gap: 0.7rem; /* Jarak antar tombol sedikit lebih kecil */
+            margin-bottom: 1.2rem; /* Jarak antara grid tombol dan iklan */
         }
         .button {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 4.8rem; /* Tinggi tombol lebih besar */
+            height: 4.5rem; /* Tinggi tombol sedikit lebih kecil */
             border-radius: 9999px; /* Bentuk bulat penuh */
-            font-size: 1.9rem; /* Ukuran font tombol lebih besar */
+            font-size: 1.7rem; /* Ukuran font tombol sedikit lebih kecil */
             color: #ffffff;
             cursor: pointer;
             transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
@@ -128,16 +127,16 @@
         }
         .button.zero {
             grid-column: span 2;
-            border-radius: 4.8rem; /* Bentuk oval */
+            border-radius: 4.5rem; /* Bentuk oval disesuaikan dengan tinggi baru */
             justify-content: flex-start;
-            padding-left: 2.2rem; /* Padding kiri lebih besar */
+            padding-left: 2rem; /* Padding kiri sedikit lebih kecil */
         }
 
         /* Gaya untuk kontainer iklan - sekarang di dalam kalkulator */
         .ad-banner-container {
             width: 100%; /* Iklan mengambil lebar penuh kontainer kalkulator */
             height: 50px; /* Tinggi sesuai iklan */
-            margin-top: 1.5rem; /* Jarak dari tombol grid */
+            margin-top: 1.2rem; /* Jarak dari tombol grid sedikit lebih kecil */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -162,20 +161,21 @@
                 border-radius: 1.5rem;
             }
             .display-wrapper {
-                font-size: 3.2rem;
-                padding: 1.2rem 0.8rem;
-                min-height: 5.5rem;
+                font-size: 3rem; /* Font display lebih kecil lagi di mobile */
+                padding: 1rem 0.7rem;
+                min-height: 5rem;
             }
             .button {
-                height: 4.2rem;
-                font-size: 1.7rem;
+                height: 4rem;
+                font-size: 1.6rem;
                 border-radius: 9999px;
             }
             .button.zero {
-                padding-left: 1.8rem;
-                border-radius: 4.2rem;
+                padding-left: 1.7rem;
+                border-radius: 4rem;
             }
             .buttons-grid {
+                gap: 0.6rem;
                 margin-bottom: 1rem;
             }
             .ad-banner-container {
@@ -265,8 +265,8 @@
             displayText.textContent = formattedDisplay; // Perbarui teks di dalam span
 
             // Penyesuaian ukuran font dinamis berdasarkan lebar konten
-            const maxFontSizeRem = 4;
-            const minFontSizeRem = 1.5;
+            const maxFontSizeRem = 3.5; // Ukuran font default yang lebih kecil
+            const minFontSizeRem = 1.2; // Ukuran font minimum yang lebih kecil
             const remToPx = parseFloat(getComputedStyle(document.documentElement).fontSize); 
 
             // Atur ulang ukuran font ke ukuran maksimum untuk mengukur scrollWidth awal
@@ -274,12 +274,11 @@
 
             const computedStyle = getComputedStyle(displayWrapper); // Gunakan displayWrapper untuk padding
             const paddingLeft = parseFloat(computedStyle.paddingLeft);
-            // Perbaikan: Ambil paddingRight langsung dari computedStyle.paddingRight
             const paddingRight = parseFloat(computedStyle.paddingRight);
             const availableDisplayWidth = displayWrapper.clientWidth - paddingLeft - paddingRight;
 
             // Iteratif kurangi ukuran font hingga pas atau mencapai minimum
-            const bufferPx = 4; // Buffer yang sedikit lebih besar untuk memastikan tidak meluap
+            const bufferPx = 4; // Buffer untuk memastikan tidak meluap
             
             // Dapatkan lebar teks saat ini setelah diatur ke maxFontSizeRem
             let textContentWidth = displayText.scrollWidth;
