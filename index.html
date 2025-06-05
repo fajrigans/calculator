@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Profesional Akurat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tambahkan Decimal.js untuk perhitungan presisi tinggi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/10.3.1/decimal.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212; /* Latar belakang sangat gelap */
+            display: flex;
+            flex-direction: column; /* Ubah ke column agar kalkulator dan iklan bisa diatur vertikal */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Hindari scroll */
+            color: #e0e0e0; /* Warna teks default */
+        }
+        .calculator-container {
+            background-color: #1e1e1e; /* Warna dasar kalkulator yang sedikit lebih terang dari body */
+            border-radius: 2rem; /* Sudut lebih membulat */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), /* Bayangan lebih dalam */
+                        0 0 0 1px rgba(255, 255, 255, 0.05) inset; /* Garis tipis di dalam */
+            width: 100%;
+            max-width: 380px; /* Lebar maksimum untuk tampilan mobile */
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem; /* Padding lebih besar */
+            box-sizing: border-box;
+            position: relative; /* Untuk efek glow */
+            overflow: hidden; /* Pastikan bayangan dalam tidak keluar */
+            /* margin-bottom: 2rem; <-- Dihapus karena iklan sudah di dalam */
+        }
+
+        /* Efek glow di sekitar kalkulator */
+        .calculator-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(0, 255, 255, 0.1), transparent 70%); /* Glow biru/cyan */
+            opacity: 0.1;
+            filter: blur(80px);
+            z-index: -1;
+            animation: rotateGlow 15s linear infinite;
+        }
+
+        @keyframes rotateGlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .display-wrapper { /* Wrapper baru untuk display agar bisa diklik */
+            background-color: #1e1e1e; /* Sama dengan container agar menyatu */
+            color: #ffffff;
+            font-size: 4rem; /* Ukuran font default, akan disesuaikan JS */
+            text-align: right;
+            padding: 1.5rem 1rem;
+            border-radius: 1rem; /* Sudut membulat */
+            margin-bottom: 1.5rem; /* Margin lebih besar */
+            overflow: hidden; /* Penting: mencegah teks meluap */
+            white-space: nowrap; /* Penting: menjaga teks dalam satu baris */
+            text-overflow: clip; /* Ubah ke clip agar tidak ada elipsis jika font mengecil */
+            font-weight: 300; /* Font lebih tipis untuk tampilan modern */
+            min-height: 6rem; /* Tinggi minimum display */
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), /* Bayangan dalam untuk efek cekung */
+                        inset 0 -2px 5px rgba(255, 255, 255, 0.05);
+            transition: font-size 0.1s ease-out; /* Transisi halus untuk perubahan ukuran font */
+            cursor: pointer; /* Menunjukkan bahwa area ini dapat diklik */
+        }
+        #display-text { /* Pastikan span memiliki display inline-block untuk pengukuran width */
+            display: inline-block;
+        }
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.8rem; /* Jarak antar tombol sedikit lebih besar */
+            margin-bottom: 1.5rem; /* Jarak antara grid tombol dan iklan */
+        }
+        .button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 4.8rem; /* Tinggi tombol lebih besar */
+            border-radius: 9999px; /* Bentuk bulat penuh */
+            font-size: 1.9rem; /* Ukuran font tombol lebih besar */
+            color: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+            user-select: none;
+            /* Desain non-flat dengan bayangan */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), /* Bayangan bawah */
+                        0 1px 2px rgba(0, 0, 0, 0.2), /* Bayangan atas */
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1); /* Kilau atas */
+            border: 1px solid rgba(255, 255, 255, 0.05); /* Garis tipis */
+        }
+        .button:active {
+            transform: translateY(2px); /* Efek tekan ke bawah */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), /* Bayangan lebih kecil saat ditekan */
+                        0 0 1px rgba(0, 0, 0, 0.3),
+                        inset 0 1px 2px rgba(0, 0, 0, 0.3); /* Bayangan dalam lebih gelap */
+        }
+        /* Warna tombol */
+        .button.number {
+            background-color: #3a3a3a; /* Warna abu-abu gelap untuk angka */
+            background-image: linear-gradient(145deg, #3a3a3a 0%, #2a2a2a 100%); /* Gradien halus */
+        }
+        .button.operator {
+            background-color: #ff9500; /* Warna oranye */
+            background-image: linear-gradient(145deg, #ff9500 0%, #e07b00 100%); /* Gradien oranye */
+            font-weight: 500; /* Sedikit lebih tebal */
+        }
+        .button.function {
+            background-color: #5a5a5a; /* Warna abu-abu sedang untuk fungsi */
+            background-image: linear-gradient(145deg, #5a5a5a 0%, #4a4a4a 100%); /* Gradien abu-abu */
+            color: #e0e0e0; /* Teks putih keabu-abuan */
+            font-weight: 400;
+        }
+        .button.zero {
+            grid-column: span 2;
+            border-radius: 4.8rem; /* Bentuk oval */
+            justify-content: flex-start;
+            padding-left: 2.2rem; /* Padding kiri lebih besar */
+        }
+
+        /* Gaya untuk kontainer iklan - sekarang di dalam kalkulator */
+        .ad-banner-container {
+            width: 100%; /* Iklan mengambil lebar penuh kontainer kalkulator */
+            height: 50px; /* Tinggi sesuai iklan */
+            margin-top: 1.5rem; /* Jarak dari tombol grid */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #2a2a2a; /* Latar belakang untuk iklan */
+            border-radius: 0.5rem;
+            overflow: hidden; /* Pastikan iklan tidak meluap */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3); /* Bayangan dalam agar menyatu */
+            padding: 0.25rem; /* Sedikit padding di dalam kontainer iklan */
+            box-sizing: border-box; /* Pastikan padding termasuk dalam lebar */
+        }
+        /* Penyesuaian untuk ins tag agar pas di dalam kontainer */
+        .ad-banner-container ins {
+            display: block; /* Penting untuk ins tag agar mengambil ruang yang benar */
+            width: 100% !important; /* Pastikan mengambil lebar penuh kontainer */
+            height: 100% !important; /* Pastikan mengambil tinggi penuh kontainer */
+        }
+
+        /* Responsif untuk layar yang lebih kecil */
+        @media (max-width: 400px) {
+            .calculator-container {
+                padding: 1rem;
+                border-radius: 1.5rem;
+            }
+            .display-wrapper {
+                font-size: 3.2rem;
+                padding: 1.2rem 0.8rem;
+                min-height: 5.5rem;
+            }
+            .button {
+                height: 4.2rem;
+                font-size: 1.7rem;
+                border-radius: 9999px;
+            }
+            .button.zero {
+                padding-left: 1.8rem;
+                border-radius: 4.2rem;
+            }
+            .buttons-grid {
+                margin-bottom: 1rem;
+            }
+            .ad-banner-container {
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div id="display-wrapper" class="display-wrapper">
+            <span id="display-text">0</span>
+        </div>
+        <div class="buttons-grid">
+            <div class="button function" data-value="C">C</div>
+            <div class="button function" data-value="DEL">DEL</div> <!-- Mengganti CE dengan DEL -->
+            <div class="button function" data-value="%">%</div>
+            <div class="button operator" data-value="/">÷</div>
+
+            <div class="button number" data-value="7">7</div>
+            <div class="button number" data-value="8">8</div>
+            <div class="button number" data-value="9">9</div>
+            <div class="button operator" data-value="*">×</div>
+
+            <div class="button number" data-value="4">4</div>
+            <div class="button number" data-value="5">5</div>
+            <div class="button number" data-value="6">6</div>
+            <div class="button operator" data-value="-">-</div>
+
+            <div class="button number" data-value="1">1</div>
+            <div class="button number" data-value="2">2</div>
+            <div class="button number" data-value="3">3</div>
+            <div class="button operator" data-value="+">+</div>
+
+            <div class="button function" data-value="+/-">+/-</div>
+            <div class="button number zero" data-value="0">0</div>
+            <div class="button number" data-value=".">.</div>
+            <div class="button operator" data-value="=">=</div>
+        </div>
+
+        <!-- Kontainer Iklan - Sekarang di dalam calculator-container -->
+        <div class="ad-banner-container">
+            <ins style="width: 320px;height:50px" data-width="320" data-height="50" class="k957114398d" data-domain="//data963.click" data-affquery="/f64c05d7073ed0fa5d77/957114398d/?placementName=bannerad12">
+                <script src="//data963.click/js/responsive.js" async></script>
+            </ins>
+        </div>
+    </div>
+
+    <script>
+        // Menginisialisasi Decimal.js dengan presisi default (20 angka desimal)
+        // Anda bisa mengatur presisi yang lebih tinggi jika diperlukan: Decimal.set({ precision: 50 });
+        const displayWrapper = document.getElementById('display-wrapper');
+        const displayText = document.getElementById('display-text'); // Elemen span untuk teks
+        let displayValue = '0'; // Nilai mentah yang digunakan untuk perhitungan
+        let firstOperand = null; // Akan menyimpan objek Decimal
+        let operator = null;
+        let waitingForSecondOperand = false;
+
+        // Fungsi untuk memperbarui tampilan kalkulator dengan pemformatan dan penyesuaian font
+        function updateDisplay() {
+            let formattedDisplay = displayValue;
+
+            // Cek apakah displayValue sudah dalam notasi eksponensial
+            if (displayValue.includes('e') || displayValue.includes('E')) {
+                formattedDisplay = displayValue; // Tampilkan apa adanya
+            } else if (!isNaN(parseFloat(displayValue)) || displayValue === '.') {
+                // Hanya format jika nilai tampilan adalah angka yang valid atau sedang mengetik desimal
+                if (displayValue === '0.') {
+                    // Kasus khusus untuk '0.' agar menjadi '0,'
+                    formattedDisplay = '0,';
+                } else if (displayValue.endsWith('.')) {
+                    // Jika diakhiri dengan titik desimal (sedang mengetik), format bagian integer dan tambahkan koma
+                    const parts = displayValue.split('.');
+                    const integerPart = new Decimal(parts[0]).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    formattedDisplay = integerPart + ',';
+                } else if (displayValue.includes('.')) {
+                    // Jika mengandung titik desimal, format bagian integer dan desimal
+                    const parts = displayValue.split('.');
+                    const integerPart = new Decimal(parts[0]).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    formattedDisplay = integerPart + ',' + parts[1];
+                } else {
+                    // Jika angka bulat, format hanya pemisah ribuan
+                    formattedDisplay = new Decimal(displayValue).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                }
+            }
+
+            displayText.textContent = formattedDisplay; // Perbarui teks di dalam span
+
+            // Penyesuaian ukuran font dinamis berdasarkan lebar konten
+            const maxFontSizeRem = 4;
+            const minFontSizeRem = 1.5;
+            const remToPx = parseFloat(getComputedStyle(document.documentElement).fontSize); 
+
+            // Atur ulang ukuran font ke ukuran maksimum untuk mengukur scrollWidth awal
+            displayText.style.fontSize = `${maxFontSizeRem}rem`;
+
+            const computedStyle = getComputedStyle(displayWrapper); // Gunakan displayWrapper untuk padding
+            const paddingLeft = parseFloat(computedStyle.paddingLeft);
+            // Perbaikan: Ambil paddingRight langsung dari computedStyle.paddingRight
+            const paddingRight = parseFloat(computedStyle.paddingRight);
+            const availableDisplayWidth = displayWrapper.clientWidth - paddingLeft - paddingRight;
+
+            // Iteratif kurangi ukuran font hingga pas atau mencapai minimum
+            const bufferPx = 4; // Buffer yang sedikit lebih besar untuk memastikan tidak meluap
+            
+            // Dapatkan lebar teks saat ini setelah diatur ke maxFontSizeRem
+            let textContentWidth = displayText.scrollWidth;
+            let currentFontSizePx = maxFontSizeRem * remToPx;
+
+            // Loop untuk mengurangi ukuran font
+            while (textContentWidth > (availableDisplayWidth - bufferPx) && currentFontSizePx > (minFontSizeRem * remToPx)) {
+                currentFontSizePx -= 1; // Kurangi 1px
+                displayText.style.fontSize = `${currentFontSizePx}px`;
+                // Ukur kembali lebar teks setelah perubahan ukuran font
+                textContentWidth = displayText.scrollWidth; 
+            }
+
+            // Pastikan ukuran font akhir tidak di bawah minimum
+            if (currentFontSizePx < (minFontSizeRem * remToPx)) {
+                displayText.style.fontSize = `${minFontSizeRem}rem`;
+            }
+        }
+
+        // Fungsi untuk menangani input angka
+        function inputDigit(digit) {
+            if (waitingForSecondOperand) {
+                displayValue = digit;
+                waitingForSecondOperand = false;
+            } else {
+                // Hindari angka nol di depan kecuali untuk desimal
+                if (displayValue === '0' && digit !== '.' && !displayValue.includes('.')) {
+                    displayValue = digit;
+                } else {
+                    displayValue += digit;
+                }
+            }
+            updateDisplay();
+        }
+
+        // Fungsi untuk menangani input desimal
+        function inputDecimal() {
+            if (waitingForSecondOperand) {
+                displayValue = '0.';
+                waitingForSecondOperand = false;
+                updateDisplay();
+                return;
+            }
+            if (!displayValue.includes('.')) {
+                displayValue += '.';
+            }
+            updateDisplay();
+        }
+
+        // Fungsi untuk mereset kalkulator
+        function clearAll() {
+            displayValue = '0';
+            firstOperand = null;
+            operator = null;
+            waitingForSecondOperand = false;
+            updateDisplay();
+        }
+
+        // Fungsi untuk menghapus digit terakhir (Backspace)
+        function backspace() {
+            if (displayValue.length === 1 || (displayValue.length === 2 && displayValue.startsWith('-'))) {
+                displayValue = '0';
+            } else {
+                displayValue = displayValue.slice(0, -1);
+            }
+            updateDisplay();
+        }
+
+        // Fungsi untuk menangani persentase
+        function inputPercent() {
+            const value = new Decimal(displayValue);
+            if (value.isZero()) return;
+            displayValue = value.dividedBy(100).toString();
+            updateDisplay();
+        }
+
+        // Fungsi untuk mengubah tanda (+/-)
+        function toggleSign() {
+            const value = new Decimal(displayValue);
+            displayValue = value.negated().toString();
+            updateDisplay();
+        }
+
+        // Objek operasi matematika menggunakan Decimal.js
+        const operations = {
+            '/': (prev, next) => prev.dividedBy(next),
+            '*': (prev, next) => prev.times(next),
+            '+': (prev, next) => prev.plus(next),
+            '-': (prev, next) => prev.minus(next),
+            '=': (prev, next) => next,
+        };
+
+        // Fungsi untuk menangani operator
+        function handleOperator(nextOperator) {
+            const inputValue = new Decimal(displayValue);
+
+            if (operator && waitingForSecondOperand) {
+                operator = nextOperator;
+                return;
+            }
+
+            if (firstOperand === null) {
+                firstOperand = inputValue;
+            } else if (operator) {
+                const result = operations[operator](firstOperand, inputValue);
+                displayValue = result.toString();
+                firstOperand = result;
+            }
+
+            waitingForSecondOperand = true;
+            operator = nextOperator;
+            updateDisplay();
+        }
+
+        // Menambahkan event listener ke semua tombol
+        const buttons = document.querySelectorAll('.button');
+        buttons.forEach(button => {
+            button.addEventListener('click', event => {
+                const { value } = event.target.dataset;
+
+                if (event.target.classList.contains('number')) {
+                    inputDigit(value);
+                } else if (event.target.classList.contains('operator')) {
+                    handleOperator(value);
+                } else if (event.target.classList.contains('function')) {
+                    switch (value) {
+                        case 'C':
+                            clearAll();
+                            break;
+                        case 'DEL': // Panggil fungsi backspace untuk tombol DEL
+                            backspace();
+                            break;
+                        case '%':
+                            inputPercent();
+                            break;
+                        case '+/-':
+                            toggleSign();
+                            break;
+                    }
+                }
+            });
+        });
+
+        // Event listener untuk menyalin teks saat display diklik
+        displayWrapper.addEventListener('click', () => {
+            const textToCopy = displayText.textContent;
+            // Menggunakan document.execCommand('copy') karena navigator.clipboard.writeText()
+            // mungkin tidak berfungsi di lingkungan iFrame
+            const tempInput = document.createElement('textarea');
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            // Memberikan feedback visual (opsional, bisa diganti dengan toast/modal)
+            const originalText = displayText.textContent;
+            displayText.textContent = 'Disalin!';
+            setTimeout(() => {
+                displayText.textContent = originalText;
+                updateDisplay(); // Panggil updateDisplay untuk memastikan font size kembali normal
+            }, 800);
+        });
+
+        // Inisialisasi tampilan
+        updateDisplay();
+    </script>
+</body>
+</html>
